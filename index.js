@@ -29,6 +29,9 @@ for (const folder of commandFolders) {
 
 client.once(Events.ClientReady, () => {
   console.log("Ready!");
+  if (!fs.existsSync(`./serveur`)) {
+    fs.mkdirSync(`./serveur`)
+  }
   client.user.setPresence({})
 });
 
