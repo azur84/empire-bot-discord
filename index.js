@@ -1,8 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { Client, Collection, Events, GatewayIntentBits } = require("discord.js");
-const { token } = require("./config.json");
-
+const token = process.env.token;
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 client.commands = new Collection();
@@ -42,7 +41,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
   // }
   if (!interaction.isChatInputCommand()) return;
   if (!interaction.commandName == "setup") {
-  if (!existsSync(`./serveur/${interaction.guildId}`)) return
+    if (!existsSync(`./serveur/${interaction.guildId}`)) return
   }
   const command = client.commands.get(interaction.commandName);
 
@@ -108,7 +107,7 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 client.on(Events.GuildMemberAdd, async interaction => {
-  
+
 })
 const pathconmenu = path.join(__dirname, "commands/contextmenu")
 const conmenuFolders = fs.readdirSync(pathconmenu);
