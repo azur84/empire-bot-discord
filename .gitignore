@@ -4,3 +4,4 @@ console.txt
 node_modules
 deploy-commands.js
 serveur
+package-lock.json
