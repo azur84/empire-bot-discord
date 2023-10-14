@@ -1,25 +1,25 @@
 const { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuOptionBuilder, StringSelectMenuBuilder } = require("discord.js");
 const { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync } = require("fs");
-const { CancelButton } = require("../../API");
+const { CancelButton, GuildApi } = require("../../API");
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("shop")
         .setDescription("the admin shop")
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName("buy")
-                .setDescription("buy in admin shop"))
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName("view")
-                .setDescription("view the shop"))
+        // .addSubcommand(subcommand =>
+        //     subcommand
+        //         .setName("buy")
+        //         .setDescription("buy in admin shop"))
+        // .addSubcommand(subcommand =>
+        //     subcommand
+        //         .setName("view")
+        //         .setDescription("view the shop"))
         .addSubcommand(subcommand =>
             subcommand
                 .setName("add")
                 .setDescription("add a item in the shop")
                 .addStringOption(option =>
-                    option.setName("name")
-                        .setDescription("shop item name")
+                    option.setName("id")
+                        .setDescription("shop item id")
                         .setRequired(true))
                 .addStringOption(option =>
                     option.setName("itemid")
@@ -29,10 +29,11 @@ module.exports = {
                     option.setName("price")
                         .setDescription("item's price")
                         .setRequired(true))
-                .addBooleanOption(option =>
-                    option.setName("sell")
-                        .setDescription("is sell shop")
-                        .setRequired(true)))
+                // .addBooleanOption(option =>
+                //     option.setName("sell")
+                //         .setDescription("is sell shop")
+                //         .setRequired(true))
+                        )
         .addSubcommand(subcommand =>
             subcommand
                 .setName("remove")
@@ -69,39 +70,50 @@ module.exports = {
             });
         } else if (subcommand === "add") {
             // Implémentez la logique pour la sous-commande "add" ici.
-            const name = interaction.options.getString("name");
+            const id = interaction.options.getString("id");
             const itemID = interaction.options.getString("itemid");
             const price = interaction.options.getNumber("price");
-            const sell = interaction.options.getBoolean("sell")
-            const shop = {
-                name: name,
-                itemID: itemID,
-                price: price,
-                sell: sell,
-            }
-            if (name == "cancel") {
+            // const sell = interaction.options.getBoolean("sell")
+
+            if (id == "cancel") {
                 interaction.reply({
-                    content: "error your name is invalid",
+                    content: "error your id is invalid",
                     ephemeral: true,
                 });
                 return
             }
-            writeFileSync(`./serveur/${interaction.guildId}/shop/${name}.json`, JSON.stringify(shop));
+            if (!new GuildApi(interaction.guildId).items().toArray.includes(itemID)) {
+                interaction.reply({
+                    content: "error your itemid is invalid",
+                    ephemeral: true,
+                });
+                return
+            }
+            if (!existsSync(`./serveur/${interaction.guildId}/item/${itemID}.json`)) {
+                interaction.reply({
+                    content: "error your itemId is invalid",
+                    ephemeral: true,
+                });
+                return
+            }
+            new GuildApi(interaction.guildId).shop().newItem(id,itemID,price)
             interaction.reply({
-                content: `You have chosen to add an item: Nom : ${name}, ID : ${itemID}, Prix : ${price}`,
+                content: `You have chosen to add an item: id : ${id}, ID : ${itemID}, Prix : ${price}`,
                 components: [CancelButton.row]
             }
             );
         } else if (subcommand === "remove") {
-            const items = readdirSync(`./serveur/${interaction.guildId}/shop`);
             let options = []
-            items.forEach((element) => {
-                const shopInfo = JSON.parse(readFileSync(`./serveur/${interaction.guildId}/shop/${element}`))
-                const itemInfo = JSON.parse(readFileSync(`./serveur/${interaction.guildId}/item/${shopInfo.itemID}.json`));
+            const guildshop = new GuildApi(interaction.guildId)
+            const array = guildshop.shop().toArray
+            array.forEach((element) => {
+                console.log(element);
+                const shopInfo = guildshop.shop()[element]
+                const itemInfo = guildshop.items()[shopInfo.itemId]
                 if (itemInfo.icon == null) {
-                    options.push(new StringSelectMenuOptionBuilder().setLabel(shopInfo.name).setValue(shopInfo.name))
+                    options.push(new StringSelectMenuOptionBuilder().setLabel(itemInfo.name).setValue(shopInfo.id))
                 } else {
-                    options.push(new StringSelectMenuOptionBuilder().setLabel(shopInfo.name).setValue(shopInfo.name).setEmoji(itemInfo.icon))
+                    options.push(new StringSelectMenuOptionBuilder().setLabel(itemInfo.name).setValue(shopInfo.id).setEmoji(itemInfo.icon))
                 }
             })
             const nul = new StringSelectMenuOptionBuilder().setLabel("cancel").setValue("cancel").setEmoji('❌');

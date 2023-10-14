@@ -1,6 +1,6 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const { Client, Collection, Events, GatewayIntentBits } = require("discord.js");
+const { Client, Collection, Events, GatewayIntentBits, ActivityType } = require("discord.js");
 const token = process.env.token;
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -31,7 +31,7 @@ client.once(Events.ClientReady, () => {
   if (!fs.existsSync(`./serveur`)) {
     fs.mkdirSync(`./serveur`)
   }
-  client.user.setPresence({})
+  client.user.setPresence({ activities: { name: "seeks its element", type: ActivityType.Listening, }, status: "online" })
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {

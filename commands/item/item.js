@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
-const { mkdirSync, existsSync, writeFileSync, readdirSync, readFileSync, cp } = require("fs");
+const { mkdirSync, existsSync } = require("fs");
 const { CancelButton, GuildApi } = require("../../API");
 
 module.exports = {
@@ -20,8 +20,9 @@ module.exports = {
                         .setDescription("item's name")
                         .setRequired(true))
                 .addNumberOption(option =>
-                    option.setName("cp")
-                        .setDescription("item's combat power"))
+                    option.setName("sell")
+                        .setDescription("item's sell cost")
+                        .setRequired(true))
                 .addStringOption(option =>
                     option.setName("icon")
                         .setDescription("item's icon"))
@@ -38,7 +39,7 @@ module.exports = {
         if (interaction.options.getSubcommand() === "add") {
             const id = interaction.options.getString("id");
             const name = interaction.options.getString("name");
-            const CP = interaction.options.getNumber("cp");
+            const CP = interaction.options.getNumber("sell");
             const icon = interaction.options.getString("icon");
             if (id == "cancel") {
                 interaction.reply({
@@ -58,6 +59,7 @@ module.exports = {
             const array = guildItems.toArray;
             array.forEach((element) => {
                 const item = guildItems[element];
+                if (item.islock()) return
                 if (item.icon == null) {
                     options.push(new StringSelectMenuOptionBuilder().setLabel(item.name).setValue(item.id))
                 } else {

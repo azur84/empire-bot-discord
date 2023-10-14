@@ -6,15 +6,11 @@ module.exports = {
         .setDescription("the admin command")
         .addSubcommand(subcommand =>
             subcommand
-                .setName("ban")
-                .setDescription("ban an user with reason")
+                .setName("info")
+                .setDescription("info")
                 .addUserOption(option =>
                     option.setName("user")
                         .setDescription("user")
-                        .setRequired(true))
-                .addStringOption(option =>
-                    option.setName("reasons")
-                        .setDescription("reasons of the ban")
                         .setRequired(true)))
         // .addSubcommand(subcommand =>
         //     subcommand
@@ -41,24 +37,9 @@ module.exports = {
         const subcommand = interaction.options.getSubcommand();
 
         switch (subcommand) {
-            case "ban":
+            case "info":
                 const user = interaction.options.getUser("user");
-                const reason = interaction.options.getString("reason");
-
-                try {
-                    await user.send(`Vous avez été banni de ${interaction.guild.name} pour la raison suivante : ${reason}`);
-                    await interaction.guild.members.ban(user, { reason });
-                    await interaction.reply({
-                        content: `${user.tag} a été banni avec succès pour la raison suivante : ${reason}`,
-                        ephemeral: true,
-                    });
-                } catch (error) {
-                    console.error(error);
-                    await interaction.reply({
-                        content: "Une erreur s'est produite lors du bannissement de l'utilisateur.",
-                        ephemeral: true,
-                    });
-                }
+                console.log(user.avatarURL())
                 break;
 
             case "resend":
